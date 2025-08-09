@@ -1156,11 +1156,10 @@ async function submitRegistration() {
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw_RrPUeTmQGvlbBiAzuPeALP99Jft11g7ha7xlGzavQKB3LsfMXlDudsf4RtTT8KgjgA/exec';
     
     const response = await fetch(SCRIPT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(formData),
-      redirect: 'follow' // Changed from 'manual' to 'follow'
-    });
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(formData),
+});
 
     // Check for HTML response
     const contentType = response.headers.get('content-type');
