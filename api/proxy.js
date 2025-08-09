@@ -1,30 +1,53 @@
+// pages/api/proxy.js (Next.js)
+// or api/proxy.js (Vercel Serverless)
+
 export default async function handler(req, res) {
-  const targetUrl = process.env.GAS_URL; // store in .env
-
-  try {
-    const gasRes = await fetch(targetUrl, {
-      method: req.method,
-      headers: {
-        'Content-Type': req.headers['content-type'] || 'application/x-www-form-urlencoded'
-      },
-      body: req.method === 'POST' ? await req.text() : undefined
-    });
-
-    const text = await gasRes.text();
-
+  // Handle CORS preflight
+  if (req.method === 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    return res.status(200).end();
+  }
 
-    if (req.method === 'OPTIONS') {
-      res.status(200).end();
-      return;
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  try {
+    // Read raw request body
+    const chunks = [];
+    for await (const chunk of req) {
+      chunks.push(chunk);
     }
+    const rawBody = Buffer.concat(chunks).toString();
 
-    res.status(gasRes.status).send(text);
+    // Your Google Apps Script endpoint
+    const gScriptUrl =
+      'https://script.google.com/macros/s/AKfycbw_RrPUeTmQGvlbBiAzuPeALP99Jft11g7ha7xlGzavQKB3LsfMXlDudsf4RtTT8KgjgA/exec';
 
-  } catch (err) {
+    // Forward request to Google Apps Script
+    const gRes = await fetch(gScriptUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: rawBody
+    });
+
+    // Get response from Google Apps Script
+    const text = await gRes.text();
+
+    // Allow browser access
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.status(500).json({ success: false, error: err.message });
+
+    // Try returning JSON if possible
+    try {
+      const json = JSON.parse(text);
+      res.status(gRes.status).json(json);
+    } catch {
+      res.status(gRes.status).send(text);
+    }
+  } catch (err) {
+    console.error('Proxy error:', err);
+    res.status(500).json({ error: err.message });
   }
 }

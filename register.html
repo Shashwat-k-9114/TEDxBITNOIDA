@@ -983,12 +983,12 @@
         </div>
     </footer>
 
-<script>
+    <script>
 const MAX_REGISTRATIONS = 100;
 let currentRegistrations = 0;
-const API_URL = '/api/proxy'; // relative path to your Vercel proxy
+const API_URL = '/api/proxy'; // Goes to our Vercel API route
 
-// Loader fade-out with fallback
+// Loader fade-out
 document.addEventListener('DOMContentLoaded', () => {
   const loader = document.querySelector('.loader');
   setTimeout(() => {
@@ -1004,7 +1004,6 @@ window.addEventListener('load', () => {
 });
 
 document.addEventListener('DOMContentLoaded', function () {
-  // Elements
   const registrationForm = document.getElementById('registrationForm');
   const paymentSection = document.getElementById('paymentSection');
   const proceedBtn = document.getElementById('proceedToPayment');
@@ -1058,7 +1057,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   registrationForm.addEventListener('submit', function (e) {
     e.preventDefault();
-    submitRegistration(submitBtn, progressContainer, progressBar);
+    submitRegistration();
   });
 
   function checkRegistrationCount() {
@@ -1106,7 +1105,7 @@ document.addEventListener('DOMContentLoaded', function () {
     return isValid;
   }
 
-  async function submitRegistration(submitBtn, progressContainer, progressBar) {
+  async function submitRegistration() {
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
 
@@ -1134,7 +1133,7 @@ document.addEventListener('DOMContentLoaded', function () {
         .join('&');
 
       progressContainer.style.display = 'block';
-      updateProgress(progressBar, 30);
+      updateProgress(30);
 
       const response = await fetch(API_URL, {
         method: 'POST',
@@ -1142,7 +1141,7 @@ document.addEventListener('DOMContentLoaded', function () {
         body: formBody
       });
 
-      updateProgress(progressBar, 70);
+      updateProgress(70);
 
       let result;
       try {
@@ -1155,7 +1154,7 @@ document.addEventListener('DOMContentLoaded', function () {
         throw new Error(result?.error || 'Registration failed');
       }
 
-      updateProgress(progressBar, 100);
+      updateProgress(100);
       showConfirmation();
 
     } catch (error) {
@@ -1178,7 +1177,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  function updateProgress(progressBar, percent) {
+  function updateProgress(percent) {
     progressBar.style.width = percent + '%';
     progressBar.textContent = percent + '%';
     if (percent === 100) progressBar.style.backgroundColor = '#4CAF50';
@@ -1200,5 +1199,6 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 });
 </script>
+
 </body>
 </html>
