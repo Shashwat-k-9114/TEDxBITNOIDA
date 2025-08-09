@@ -986,7 +986,7 @@
 <script>
 const MAX_REGISTRATIONS = 100;
 let currentRegistrations = 0;
-const API_URL = '/api/proxy'; // relative path
+const API_URL = '/api/proxy'; // relative path to your Vercel proxy
 
 // Loader fade-out with fallback
 document.addEventListener('DOMContentLoaded', () => {
@@ -1004,6 +1004,16 @@ window.addEventListener('load', () => {
 });
 
 document.addEventListener('DOMContentLoaded', function () {
+  // Elements
+  const registrationForm = document.getElementById('registrationForm');
+  const paymentSection = document.getElementById('paymentSection');
+  const proceedBtn = document.getElementById('proceedToPayment');
+  const submitBtn = document.getElementById('submitRegistration');
+  const paymentAmount = document.getElementById('paymentAmount');
+  const slotsLeft = document.getElementById('slotsLeft');
+  const progressBar = document.getElementById('uploadProgress');
+  const progressContainer = document.getElementById('progressContainer');
+
   checkRegistrationCount();
 
   document.querySelector('.mobile-menu-btn').addEventListener('click', () => {
@@ -1048,150 +1058,147 @@ document.addEventListener('DOMContentLoaded', function () {
 
   registrationForm.addEventListener('submit', function (e) {
     e.preventDefault();
-    submitRegistration();
-  });
-});
-
-function checkRegistrationCount() {
-  currentRegistrations = parseInt(localStorage.getItem('tedx_registrations')) || 0;
-  const remaining = MAX_REGISTRATIONS - currentRegistrations;
-  slotsLeft.textContent = remaining;
-  if (remaining <= 0) {
-    proceedBtn.disabled = true;
-    proceedBtn.textContent = 'Registrations Closed';
-    alert('All seats have been filled.');
-  }
-}
-
-function validateBasicForm() {
-  const requiredFields = ['fullName', 'email', 'phone', 'institution']
-    .map(id => document.getElementById(id));
-
-  let isValid = true;
-  requiredFields.forEach(field => {
-    if (!field.value.trim()) {
-      field.style.borderColor = 'var(--error)';
-      isValid = false;
-    } else {
-      field.style.borderColor = '';
-    }
+    submitRegistration(submitBtn, progressContainer, progressBar);
   });
 
-  const email = document.getElementById('email').value;
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    alert('Enter a valid email.');
-    return false;
-  }
-
-  const phone = document.getElementById('phone').value;
-  if (!/^[6-9]\d{9}$/.test(phone)) {
-    alert('Enter a valid 10-digit Indian phone number.');
-    return false;
-  }
-
-  if (!document.querySelector('input[name="ticketType"]:checked')) {
-    alert('Please select a ticket type.');
-    return false;
-  }
-
-  return isValid;
-}
-
-async function submitRegistration() {
-  submitBtn.disabled = true;
-  submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-
-  try {
-    const fileInput = document.getElementById('paymentProof');
-    let base64File = '';
-    if (fileInput.files[0]) {
-      base64File = await toBase64(fileInput.files[0]);
+  function checkRegistrationCount() {
+    currentRegistrations = parseInt(localStorage.getItem('tedx_registrations')) || 0;
+    const remaining = MAX_REGISTRATIONS - currentRegistrations;
+    slotsLeft.textContent = remaining;
+    if (remaining <= 0) {
+      proceedBtn.disabled = true;
+      proceedBtn.textContent = 'Registrations Closed';
+      alert('All seats have been filled.');
     }
+  }
 
-    const formData = {
-      name: document.getElementById('fullName').value,
-      email: document.getElementById('email').value,
-      phone: document.getElementById('phone').value,
-      institution: document.getElementById('institution').value,
-      ticketType: document.querySelector('input[name="ticketType"]:checked').value,
-      transactionId: document.getElementById('transactionId').value,
-      paymentProofBase64: base64File,
-      paymentProofName: fileInput.files[0]?.name || '',
-      paymentProofType: fileInput.files[0]?.type || ''
-    };
+  function validateBasicForm() {
+    const requiredFields = ['fullName', 'email', 'phone', 'institution']
+      .map(id => document.getElementById(id));
 
-    const formBody = Object.entries(formData)
-      .map(([key, value]) => encodeURIComponent(key) + '=' + encodeURIComponent(value))
-      .join('&');
-
-    progressContainer.style.display = 'block';
-    updateProgress(30);
-
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: formBody
+    let isValid = true;
+    requiredFields.forEach(field => {
+      if (!field.value.trim()) {
+        field.style.borderColor = 'var(--error)';
+        isValid = false;
+      } else {
+        field.style.borderColor = '';
+      }
     });
 
-    updateProgress(70);
-
-    let result;
-    try {
-      result = await response.json();
-    } catch {
-      throw new Error('Invalid JSON response from server');
+    const email = document.getElementById('email').value;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      alert('Enter a valid email.');
+      return false;
     }
 
-    if (!response.ok || !result.success) {
-      throw new Error(result?.error || 'Registration failed');
+    const phone = document.getElementById('phone').value;
+    if (!/^[6-9]\d{9}$/.test(phone)) {
+      alert('Enter a valid 10-digit Indian phone number.');
+      return false;
     }
 
-    updateProgress(100);
-    showConfirmation();
+    if (!document.querySelector('input[name="ticketType"]:checked')) {
+      alert('Please select a ticket type.');
+      return false;
+    }
 
-  } catch (error) {
-    alert(`Registration failed: ${error.message}`);
-    progressBar.style.backgroundColor = '#f44336';
-    progressBar.textContent = 'Error';
-  } finally {
-    submitBtn.disabled = false;
-    submitBtn.textContent = 'Complete Registration';
-    setTimeout(() => progressContainer.style.display = 'none', 1500);
+    return isValid;
   }
-}
 
-function toBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result.split(',')[1]);
-    reader.onerror = err => reject(err);
-    reader.readAsDataURL(file);
-  });
-}
+  async function submitRegistration(submitBtn, progressContainer, progressBar) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
 
-function updateProgress(percent) {
-  progressBar.style.width = percent + '%';
-  progressBar.textContent = percent + '%';
-  if (percent === 100) progressBar.style.backgroundColor = '#4CAF50';
-}
+    try {
+      const fileInput = document.getElementById('paymentProof');
+      let base64File = '';
+      if (fileInput.files[0]) {
+        base64File = await toBase64(fileInput.files[0]);
+      }
 
-function showConfirmation() {
-  const email = document.getElementById('email').value;
-  const ticketType = document.querySelector('input[name="ticketType"]:checked').value;
-  let amount = ticketType === 'professional' ? '₹1000' :
-               ticketType === 'vip' ? '₹2500' : '₹500';
+      const formData = {
+        name: document.getElementById('fullName').value,
+        email: document.getElementById('email').value,
+        phone: document.getElementById('phone').value,
+        institution: document.getElementById('institution').value,
+        ticketType: document.querySelector('input[name="ticketType"]:checked').value,
+        transactionId: document.getElementById('transactionId').value,
+        paymentProofBase64: base64File,
+        paymentProofName: fileInput.files[0]?.name || '',
+        paymentProofType: fileInput.files[0]?.type || ''
+      };
 
-  document.getElementById('confirmEmail').textContent = email;
-  document.getElementById('confirmTicketType').textContent = ticketType;
-  document.getElementById('confirmAmount').textContent = amount;
+      const formBody = Object.entries(formData)
+        .map(([key, value]) => encodeURIComponent(key) + '=' + encodeURIComponent(value))
+        .join('&');
 
-  confirmationOverlay.style.display = 'flex';
-  document.body.style.overflow = 'hidden';
-  setTimeout(() => registrationForm.reset(), 1000);
-}
+      progressContainer.style.display = 'block';
+      updateProgress(progressBar, 30);
+
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: formBody
+      });
+
+      updateProgress(progressBar, 70);
+
+      let result;
+      try {
+        result = await response.json();
+      } catch {
+        throw new Error('Invalid JSON response from server');
+      }
+
+      if (!response.ok || !result.success) {
+        throw new Error(result?.error || 'Registration failed');
+      }
+
+      updateProgress(progressBar, 100);
+      showConfirmation();
+
+    } catch (error) {
+      alert(`Registration failed: ${error.message}`);
+      progressBar.style.backgroundColor = '#f44336';
+      progressBar.textContent = 'Error';
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Complete Registration';
+      setTimeout(() => progressContainer.style.display = 'none', 1500);
+    }
+  }
+
+  function toBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = err => reject(err);
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function updateProgress(progressBar, percent) {
+    progressBar.style.width = percent + '%';
+    progressBar.textContent = percent + '%';
+    if (percent === 100) progressBar.style.backgroundColor = '#4CAF50';
+  }
+
+  function showConfirmation() {
+    const email = document.getElementById('email').value;
+    const ticketType = document.querySelector('input[name="ticketType"]:checked').value;
+    let amount = ticketType === 'professional' ? '₹1000' :
+                 ticketType === 'vip' ? '₹2500' : '₹500';
+
+    document.getElementById('confirmEmail').textContent = email;
+    document.getElementById('confirmTicketType').textContent = ticketType;
+    document.getElementById('confirmAmount').textContent = amount;
+
+    document.getElementById('confirmationOverlay').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => registrationForm.reset(), 1000);
+  }
+});
 </script>
-
-
-
 </body>
 </html>
