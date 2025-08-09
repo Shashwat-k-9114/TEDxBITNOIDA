@@ -1160,7 +1160,10 @@ async function submitRegistration() {
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify(formData),
 });
-
+const text = await response.text();
+console.log('Response text:', text);
+// Only parse JSON if you’re sure response is JSON
+const result = JSON.parse(text);
     // Check for HTML response
     const contentType = response.headers.get('content-type');
     if (!contentType || !contentType.includes('application/json')) {
