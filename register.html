@@ -1132,7 +1132,7 @@ async function submitRegistration() {
   submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
 
   try {
-    // Prepare data
+    // Prepare form data
     const formData = {
       name: document.getElementById('fullName').value,
       email: document.getElementById('email').value,
@@ -1142,7 +1142,7 @@ async function submitRegistration() {
       transactionId: document.getElementById('transactionId').value
     };
 
-    // Add file if exists
+    // Add file if uploaded
     const fileInput = document.getElementById('paymentProof');
     if (fileInput.files[0]) {
       formData.paymentProof = {
@@ -1152,32 +1152,50 @@ async function submitRegistration() {
       };
     }
 
-    // Send request
-    const response = await fetch('https://script.google.com/macros/s/AKfycb.../exec', {
+    // DIRECTLY call Google Script URL (bypass Vercel proxy temporarily)
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw_RrPUeTmQGvlbBiAzuPeALP99Jft11g7ha7xlGzavQKB3LsfMXlDudsf4RtTT8KgjgA/exec';
+    
+    const response = await fetch(SCRIPT_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(formData),
-      redirect: 'manual' // Critical for Google Script
+      redirect: 'follow' // Changed from 'manual' to 'follow'
     });
 
-    // Handle Google Script's redirect
-    if (response.type === 'opaqueredirect') {
-      alert('Registration submitted! Check your email.');
-      return;
+    // Check for HTML response
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      const text = await response.text();
+      throw new Error(`Unexpected response: ${text.substring(0, 100)}...`);
     }
 
     const result = await response.json();
-    if (!result.success) throw new Error(result.error);
     
-    showConfirmation(result);
+    if (!result.success) {
+      throw new Error(result.error || 'Registration failed');
+    }
+    
+    // Show success
+    document.getElementById('confirmationOverlay').style.display = 'flex';
+    document.getElementById('confirmEmail').textContent = formData.email;
 
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Registration error:', error);
     alert(`Registration failed: ${error.message}`);
   } finally {
     submitBtn.disabled = false;
     submitBtn.textContent = 'Complete Registration';
   }
+}
+
+// File to Base64 converter
+function toBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = error => reject(error);
+  });
 }
 
 function toBase64(file) {
