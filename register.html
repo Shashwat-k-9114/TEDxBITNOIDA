@@ -1125,6 +1125,20 @@ async function submitRegistration() {
   submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
 
   try {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData)
+    });
+
+    // Handle non-JSON responses
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      const text = await response.text();
+      throw new Error(`Invalid response: ${text.slice(0, 100)}...`);
+    }
+
+    const result = await response.json();
     // Prepare form data
     const formData = {
       name: document.getElementById('fullName').value,
@@ -1144,12 +1158,10 @@ async function submitRegistration() {
           mimeType: fileInput.files[0].type,
           base64: await toBase64(fileInput.files[0])
         };
-      } catch (fileError) {
-        alert('Error processing file: ' + fileError.message);
-        throw fileError;
-      }
-    }
-
+      } catch (error) {
+    console.error('Registration error:', error);
+    alert(`Registration failed: ${error.message}`);
+  } finally {   
     // Show upload progress
     progressContainer.style.display = 'block';
     updateProgress(30);
