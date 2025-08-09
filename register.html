@@ -1128,76 +1128,64 @@
     }
 
     async function submitRegistration() {
-        if (currentRegistrations >= MAX_REGISTRATIONS) {
-            alert('All seats have been filled. Registrations are now closed.');
-            return;
-        }
-        if (!validateBasicForm()) return;
+  const submitBtn = document.getElementById('submitRegistration');
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
 
-        const paymentProof = document.getElementById('paymentProof');
-        if (!paymentProof.files.length) {
-            alert('Please upload payment proof');
-            return;
-        }
-        const file = paymentProof.files[0];
-        if (file.size > 5 * 1024 * 1024) {
-            alert('File size exceeds 5MB limit.');
-            return;
-        }
-        const transactionId = document.getElementById('transactionId').value;
-        if (!transactionId.trim()) {
-            alert('Please enter transaction ID');
-            return;
-        }
+  try {
+    const formData = {
+      // Your form data collection logic
+      name: document.getElementById('fullName').value,
+      email: document.getElementById('email').value,
+      // ... include all other fields ...
+    };
 
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-        progressContainer.style.display = 'block';
-        updateProgress(0);
-
-        try {
-            const base64Data = await toBase64(file);
-
-            const payload = {
-                name: document.getElementById('fullName').value,
-                email: document.getElementById('email').value,
-                phone: document.getElementById('phone').value,
-                institution: document.getElementById('institution').value,
-                ticketType: document.querySelector('input[name="ticketType"]:checked').value,
-                transactionId: transactionId,
-                paymentProof: {
-                    filename: file.name,
-                    mimeType: file.type,
-                    base64: base64Data.split(',')[1]
-                }
-            };
-
-            const response = await fetch(API_URL, {
-              method: 'POST',
-              headers: { 'Content-Type': 'text/plain' },
-              body: JSON.stringify(payload)
-
-            });
-
-
-            if (!response.ok) throw new Error(`Server error: ${response.status}`);
-            const result = await response.json();
-            if (result.success) {
-                updateProgress(100);
-                currentRegistrations++;
-                localStorage.setItem('tedx_registrations', currentRegistrations.toString());
-                slotsLeft.textContent = MAX_REGISTRATIONS - currentRegistrations;
-                showConfirmation();
-            } else {
-                throw new Error(result.error || 'Registration failed');
-            }
-        } catch (err) {
-            handleUploadError(err.message);
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Complete Registration';
-        }
+    // Add file if exists
+    const fileInput = document.getElementById('paymentProof');
+    if (fileInput.files[0]) {
+      formData.paymentProof = {
+        filename: fileInput.files[0].name,
+        base64: await toBase64(fileInput.files[0])
+      };
     }
+
+    const response = await fetch('/api', {  // Using Vercel proxy
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(formData)
+    });
+
+    if (!response.ok) throw new Error('Network response was not ok');
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      // Show success message
+      document.getElementById('confirmationOverlay').style.display = 'flex';
+      document.getElementById('confirmEmail').textContent = formData.email;
+    } else {
+      throw new Error(result.error || 'Registration failed');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Registration failed: ' + error.message);
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Complete Registration';
+  }
+}
+
+// Helper function for file conversion
+function toBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = error => reject(error);
+  });
+}
 
     function updateProgress(percent) {
         progressBar.style.width = percent + '%';
