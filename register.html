@@ -1118,14 +1118,7 @@
         return isValid;
     }
 
-    function toBase64(file) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-        });
-    }
+// Replace the submitRegistration function with this:
 async function submitRegistration() {
   const submitBtn = document.getElementById('submitRegistration');
   submitBtn.disabled = true;
@@ -1145,41 +1138,48 @@ async function submitRegistration() {
     // Add file if uploaded
     const fileInput = document.getElementById('paymentProof');
     if (fileInput.files[0]) {
-      formData.paymentProof = {
-        filename: fileInput.files[0].name,
-        mimeType: fileInput.files[0].type,
-        base64: await toBase64(fileInput.files[0])
-      };
+      try {
+        formData.paymentProof = {
+          filename: fileInput.files[0].name,
+          mimeType: fileInput.files[0].type,
+          base64: await toBase64(fileInput.files[0])
+        };
+      } catch (fileError) {
+        alert('Error processing file: ' + fileError.message);
+        throw fileError;
+      }
     }
 
-    // DIRECTLY call Google Script URL (bypass Vercel proxy temporarily)
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw_RrPUeTmQGvlbBiAzuPeALP99Jft11g7ha7xlGzavQKB3LsfMXlDudsf4RtTT8KgjgA/exec';
-    
-    const response = await fetch(SCRIPT_URL, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify(formData),
-});
-const text = await response.text();
-console.log('Response text:', text);
-// Only parse JSON if you’re sure response is JSON
-const result = JSON.parse(text);
-    // Check for HTML response
-    const contentType = response.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
-      const text = await response.text();
-      throw new Error(`Unexpected response: ${text.substring(0, 100)}...`);
+    // Show upload progress
+    progressContainer.style.display = 'block';
+    updateProgress(30);
+
+    // Make the API call
+    const response = await fetch('/api', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData)
+    });
+
+    updateProgress(70);
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Registration failed');
     }
 
     const result = await response.json();
-    
+    updateProgress(100);
+
     if (!result.success) {
       throw new Error(result.error || 'Registration failed');
     }
-    
+
     // Show success
-    document.getElementById('confirmationOverlay').style.display = 'flex';
     document.getElementById('confirmEmail').textContent = formData.email;
+    document.getElementById('confirmTicketType').textContent = formData.ticketType;
+    document.getElementById('confirmAmount').textContent = paymentAmount.textContent;
+    confirmationOverlay.style.display = 'flex';
 
   } catch (error) {
     console.error('Registration error:', error);
@@ -1187,24 +1187,19 @@ const result = JSON.parse(text);
   } finally {
     submitBtn.disabled = false;
     submitBtn.textContent = 'Complete Registration';
+    progressContainer.style.display = 'none';
   }
 }
 
-// File to Base64 converter
+// Keep only one toBase64 function
 function toBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result.split(',')[1]);
-    reader.onerror = error => reject(error);
-  });
-}
-
-function toBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onload = () => {
+      const base64String = reader.result.split(',')[1];
+      resolve(base64String);
+    };
     reader.onerror = error => reject(error);
   });
 }
