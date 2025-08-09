@@ -986,7 +986,7 @@
 <script>
 const MAX_REGISTRATIONS = 100;
 let currentRegistrations = 0;
-const API_URL = 'https://script.google.com/macros/s/AKfycbw_RrPUeTmQGvlbBiAzuPeALP99Jft11g7ha7xlGzavQKB3LsfMXlDudsf4RtTT8KgjgA/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbw_RrPUeTmQGvlbBiAzuPeALP99Jft11g7ha7xlGzavQKB3LsfMXlDudsf4RtTT8KgjgA/exec'; // Replace with deployed Apps Script Web App URL
 
 // Elements
 const registrationForm = document.getElementById('registrationForm');
@@ -999,7 +999,7 @@ const slotsLeft = document.getElementById('slotsLeft');
 const progressBar = document.getElementById('uploadProgress');
 const progressContainer = document.getElementById('progressContainer');
 
-// Loader fade-out — always runs
+// Loader fade-out
 window.addEventListener('load', () => {
   const loader = document.querySelector('.loader');
   setTimeout(() => {
@@ -1008,21 +1008,17 @@ window.addEventListener('load', () => {
   }, 1000);
 });
 
-// Initial setup
 document.addEventListener('DOMContentLoaded', function () {
   checkRegistrationCount();
 
-  // Mobile menu toggle
   document.querySelector('.mobile-menu-btn').addEventListener('click', () => {
     document.querySelector('.mobile-menu').classList.toggle('active');
   });
 
-  // Navbar scroll effect
   window.addEventListener('scroll', () => {
     document.querySelector('nav').classList.toggle('scrolled', window.scrollY > 50);
   });
 
-  // File upload
   const fileInput = document.getElementById('paymentProof');
   const fileUploadArea = document.getElementById('fileUploadArea');
   const fileName = document.getElementById('fileName');
@@ -1042,7 +1038,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  // Proceed to payment
   proceedBtn.addEventListener('click', function () {
     if (validateBasicForm()) {
       const ticketType = document.querySelector('input[name="ticketType"]:checked').value;
@@ -1056,7 +1051,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  // Form submit
   registrationForm.addEventListener('submit', function (e) {
     e.preventDefault();
     submitRegistration();
@@ -1067,7 +1061,6 @@ function checkRegistrationCount() {
   currentRegistrations = parseInt(localStorage.getItem('tedx_registrations')) || 0;
   const remaining = MAX_REGISTRATIONS - currentRegistrations;
   slotsLeft.textContent = remaining;
-
   if (remaining <= 0) {
     proceedBtn.disabled = true;
     proceedBtn.textContent = 'Registrations Closed';
@@ -1114,31 +1107,36 @@ async function submitRegistration() {
   submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
 
   try {
+    const fileInput = document.getElementById('paymentProof');
+    let base64File = '';
+    if (fileInput.files[0]) {
+      base64File = await toBase64(fileInput.files[0]);
+    }
+
     const formData = {
       name: document.getElementById('fullName').value,
       email: document.getElementById('email').value,
       phone: document.getElementById('phone').value,
       institution: document.getElementById('institution').value,
       ticketType: document.querySelector('input[name="ticketType"]:checked').value,
-      transactionId: document.getElementById('transactionId').value
+      transactionId: document.getElementById('transactionId').value,
+      paymentProofBase64: base64File,
+      paymentProofName: fileInput.files[0]?.name || '',
+      paymentProofType: fileInput.files[0]?.type || ''
     };
 
-    const fileInput = document.getElementById('paymentProof');
-    if (fileInput.files[0]) {
-      formData.paymentProof = {
-        filename: fileInput.files[0].name,
-        mimeType: fileInput.files[0].type,
-        base64: await toBase64(fileInput.files[0])
-      };
-    }
+    const formBody = Object.entries(formData)
+      .map(([key, value]) => encodeURIComponent(key) + '=' + encodeURIComponent(value))
+      .join('&');
 
     progressContainer.style.display = 'block';
     updateProgress(30);
 
     const response = await fetch(API_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(formData)
+      mode: 'cors',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: formBody
     });
 
     updateProgress(70);
@@ -1188,11 +1186,9 @@ function showConfirmation() {
 
   confirmationOverlay.style.display = 'flex';
   document.body.style.overflow = 'hidden';
-
   setTimeout(() => registrationForm.reset(), 1000);
 }
 </script>
-
 
 </body>
 </html>
