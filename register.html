@@ -1141,9 +1141,16 @@ async function submitRegistration() {
 
     updateProgress(70);
 
-    if (!response.ok) throw new Error('Registration failed.');
-    const result = await response.json();
-    if (!result.success) throw new Error(result.error || 'Registration failed.');
+    let result;
+    try {
+      result = await response.json();
+    } catch (parseError) {
+      throw new Error('Invalid JSON response from server');
+    }
+
+    if (!response.ok || !result.success) {
+      throw new Error(result?.error || 'Registration failed');
+    }
 
     updateProgress(100);
     showConfirmation();
@@ -1189,6 +1196,7 @@ function showConfirmation() {
   setTimeout(() => registrationForm.reset(), 1000);
 }
 </script>
+
 
 </body>
 </html>
