@@ -1069,16 +1069,16 @@
     // ===== FUNCTIONS =====
 
     function checkRegistrationCount() {
-        currentRegistrations = parseInt(localStorage.getItem('tedx_registrations')) || 0;
-        const remaining = MAX_REGISTRATIONS - currentRegistrations;
-        slotsLeft.textContent = remaining;
+    currentRegistrations = parseInt(localStorage.getItem('tedx_registrations')) || 0;
+    const remaining = MAX_REGISTRATIONS - currentRegistrations;
+    slotsLeft.textContent = remaining;
 
-        if (remaining <= 0) {
-            proceedBtn.disabled = true;
-            proceedBtn.textContent = 'Registrations Closed';
-            alert('All seats have been filled. Registrations are now closed.');
-        }
+    if (remaining <= 0) {
+        proceedBtn.disabled = true;
+        proceedBtn.textContent = 'Registrations Closed';
+        alert('All seats have been filled. Registrations are now closed.');
     }
+}
 
     function validateBasicForm() {
         const requiredFields = [
