@@ -988,29 +988,19 @@ const MAX_REGISTRATIONS = 100;
 let currentRegistrations = 0;
 const API_URL = '/api/proxy'; // relative path
 
-const response = await fetch(API_URL, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-  body: formBody
-});
-// Elements
-const registrationForm = document.getElementById('registrationForm');
-const paymentSection = document.getElementById('paymentSection');
-const proceedBtn = document.getElementById('proceedToPayment');
-const submitBtn = document.getElementById('submitRegistration');
-const confirmationOverlay = document.getElementById('confirmationOverlay');
-const paymentAmount = document.getElementById('paymentAmount');
-const slotsLeft = document.getElementById('slotsLeft');
-const progressBar = document.getElementById('uploadProgress');
-const progressContainer = document.getElementById('progressContainer');
-
-// Loader fade-out
-window.addEventListener('load', () => {
+// Loader fade-out with fallback
+document.addEventListener('DOMContentLoaded', () => {
   const loader = document.querySelector('.loader');
   setTimeout(() => {
     loader.classList.add('fade-out');
     loader.addEventListener('transitionend', () => loader.remove());
-  }, 1000);
+  }, 1500);
+});
+
+window.addEventListener('load', () => {
+  const loader = document.querySelector('.loader');
+  loader.classList.add('fade-out');
+  loader.addEventListener('transitionend', () => loader.remove());
 });
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -1140,7 +1130,7 @@ async function submitRegistration() {
     const response = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: formBody // no mode: 'cors' to reduce preflight
+      body: formBody
     });
 
     updateProgress(70);
@@ -1200,6 +1190,7 @@ function showConfirmation() {
   setTimeout(() => registrationForm.reset(), 1000);
 }
 </script>
+
 
 
 </body>
