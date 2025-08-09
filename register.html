@@ -1060,16 +1060,28 @@ document.addEventListener('DOMContentLoaded', function () {
     submitRegistration();
   });
 
-  function checkRegistrationCount() {
-    currentRegistrations = parseInt(localStorage.getItem('tedx_registrations')) || 0;
-    const remaining = MAX_REGISTRATIONS - currentRegistrations;
+async function checkRegistrationCount() {
+  try {
+    const res = await fetch(`${API_URL}?action=count`);
+    const data = await res.json();
+    const total = data.count || 0;
+    const remaining = MAX_REGISTRATIONS - total;
+
     slotsLeft.textContent = remaining;
+
     if (remaining <= 0) {
       proceedBtn.disabled = true;
       proceedBtn.textContent = 'Registrations Closed';
+      registrationForm.querySelectorAll('input, button, select, textarea')
+        .forEach(el => el.disabled = true);
       alert('All seats have been filled.');
     }
+  } catch (err) {
+    console.error('Failed to check registration count', err);
+    slotsLeft.textContent = 'N/A';
   }
+}
+
 
   function validateBasicForm() {
     const requiredFields = ['fullName', 'email', 'phone', 'institution']

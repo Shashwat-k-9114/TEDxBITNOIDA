@@ -27,7 +27,9 @@ export default async function handler(req, res) {
       'https://script.google.com/macros/s/AKfycbw_RrPUeTmQGvlbBiAzuPeALP99Jft11g7ha7xlGzavQKB3LsfMXlDudsf4RtTT8KgjgA/exec';
 
     // Forward request to Google Apps Script
-    const gRes = await fetch(gScriptUrl, {
+    const url = gScriptUrl + (req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : '');
+
+    const gRes = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: rawBody
