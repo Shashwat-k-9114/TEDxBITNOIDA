@@ -1126,30 +1126,38 @@
             reader.readAsDataURL(file);
         });
     }
-
-    async function submitRegistration() {
+async function submitRegistration() {
   const submitBtn = document.getElementById('submitRegistration');
   submitBtn.disabled = true;
   submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
 
   try {
+    // Prepare form data
     const formData = {
-      // Your form data collection logic
       name: document.getElementById('fullName').value,
       email: document.getElementById('email').value,
-      // ... include all other fields ...
+      phone: document.getElementById('phone').value,
+      institution: document.getElementById('institution').value,
+      ticketType: document.querySelector('input[name="ticketType"]:checked').value,
+      transactionId: document.getElementById('transactionId').value
     };
 
-    // Add file if exists
+    // Add file if uploaded
     const fileInput = document.getElementById('paymentProof');
     if (fileInput.files[0]) {
       formData.paymentProof = {
         filename: fileInput.files[0].name,
+        mimeType: fileInput.files[0].type,
         base64: await toBase64(fileInput.files[0])
       };
     }
 
-    const response = await fetch('/api', {  // Using Vercel proxy
+    // First test connection
+    const testResponse = await fetch('/api?test=connection');
+    if (!testResponse.ok) throw new Error('Connection test failed');
+
+    // Send data
+    const response = await fetch('/api', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -1162,9 +1170,7 @@
     const result = await response.json();
     
     if (result.success) {
-      // Show success message
-      document.getElementById('confirmationOverlay').style.display = 'flex';
-      document.getElementById('confirmEmail').textContent = formData.email;
+      showConfirmation(result);
     } else {
       throw new Error(result.error || 'Registration failed');
     }
@@ -1175,6 +1181,23 @@
     submitBtn.disabled = false;
     submitBtn.textContent = 'Complete Registration';
   }
+}
+
+// Helper function to convert file to base64
+function toBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = error => reject(error);
+  });
+}
+
+function showConfirmation(result) {
+  document.getElementById('confirmationOverlay').style.display = 'flex';
+  document.getElementById('confirmEmail').textContent = result.email || formData.email;
+  // Reset form
+  document.getElementById('registrationForm').reset();
 }
 
 // Helper function for file conversion
