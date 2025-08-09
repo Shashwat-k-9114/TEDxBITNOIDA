@@ -986,8 +986,13 @@
 <script>
 const MAX_REGISTRATIONS = 100;
 let currentRegistrations = 0;
-const API_URL = 'https://script.google.com/macros/s/AKfycbw_RrPUeTmQGvlbBiAzuPeALP99Jft11g7ha7xlGzavQKB3LsfMXlDudsf4RtTT8KgjgA/exec'; // Replace with deployed Apps Script Web App URL
+const API_URL = '/api/proxy'; // relative path
 
+const response = await fetch(API_URL, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+  body: formBody
+});
 // Elements
 const registrationForm = document.getElementById('registrationForm');
 const paymentSection = document.getElementById('paymentSection');
