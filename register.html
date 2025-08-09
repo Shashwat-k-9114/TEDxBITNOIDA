@@ -984,162 +984,136 @@
     </footer>
 
 <script>
-    // ==== CONFIG ====
-    const MAX_REGISTRATIONS = 100;
-    let currentRegistrations = 0;
-    const API_URL = 'https://script.google.com/macros/s/AKfycbw_RrPUeTmQGvlbBiAzuPeALP99Jft11g7ha7xlGzavQKB3LsfMXlDudsf4RtTT8KgjgA/exec'; // change this
+const MAX_REGISTRATIONS = 100;
+let currentRegistrations = 0;
+const API_URL = 'https://script.google.com/macros/s/AKfycbw_RrPUeTmQGvlbBiAzuPeALP99Jft11g7ha7xlGzavQKB3LsfMXlDudsf4RtTT8KgjgA/exec';
 
-    // ==== ELEMENTS ====
-    const registrationForm = document.getElementById('registrationForm');
-    const paymentSection = document.getElementById('paymentSection');
-    const proceedBtn = document.getElementById('proceedToPayment');
-    const submitBtn = document.getElementById('submitRegistration');
-    const confirmationOverlay = document.getElementById('confirmationOverlay');
-    const paymentAmount = document.getElementById('paymentAmount');
-    const slotsLeft = document.getElementById('slotsLeft');
-    const progressBar = document.getElementById('uploadProgress');
-    const progressContainer = document.getElementById('progressContainer');
+// Elements
+const registrationForm = document.getElementById('registrationForm');
+const paymentSection = document.getElementById('paymentSection');
+const proceedBtn = document.getElementById('proceedToPayment');
+const submitBtn = document.getElementById('submitRegistration');
+const confirmationOverlay = document.getElementById('confirmationOverlay');
+const paymentAmount = document.getElementById('paymentAmount');
+const slotsLeft = document.getElementById('slotsLeft');
+const progressBar = document.getElementById('uploadProgress');
+const progressContainer = document.getElementById('progressContainer');
 
-    document.addEventListener('DOMContentLoaded', function () {
-        checkRegistrationCount();
+// Loader fade-out — always runs
+window.addEventListener('load', () => {
+  const loader = document.querySelector('.loader');
+  setTimeout(() => {
+    loader.classList.add('fade-out');
+    loader.addEventListener('transitionend', () => loader.remove());
+  }, 1000);
+});
 
-        // Loader fade out
-        setTimeout(() => {
-            const loader = document.querySelector('.loader');
-            loader.classList.add('fade-out');
-            loader.addEventListener('transitionend', () => {
-                loader.style.display = 'none';
-                document.body.style.overflow = 'auto';
-            });
-        }, 1000);
+// Initial setup
+document.addEventListener('DOMContentLoaded', function () {
+  checkRegistrationCount();
 
-        // Mobile menu toggle
-        document.querySelector('.mobile-menu-btn').addEventListener('click', function () {
-            document.querySelector('.mobile-menu').classList.toggle('active');
-        });
+  // Mobile menu toggle
+  document.querySelector('.mobile-menu-btn').addEventListener('click', () => {
+    document.querySelector('.mobile-menu').classList.toggle('active');
+  });
 
-        // Navbar scroll effect
-        window.addEventListener('scroll', function () {
-            document.querySelector('nav').classList.toggle('scrolled', window.scrollY > 50);
-        });
+  // Navbar scroll effect
+  window.addEventListener('scroll', () => {
+    document.querySelector('nav').classList.toggle('scrolled', window.scrollY > 50);
+  });
 
-        // File upload click
-        const fileInput = document.getElementById('paymentProof');
-        const fileUploadArea = document.getElementById('fileUploadArea');
-        const fileName = document.getElementById('fileName');
+  // File upload
+  const fileInput = document.getElementById('paymentProof');
+  const fileUploadArea = document.getElementById('fileUploadArea');
+  const fileName = document.getElementById('fileName');
 
-        fileUploadArea.addEventListener('click', () => fileInput.click());
-
-        fileInput.addEventListener('change', function () {
-            if (this.files.length > 0) {
-                fileName.textContent = this.files[0].name;
-                fileName.style.display = 'block';
-                fileUploadArea.style.borderColor = '#e62b1e';
-
-                if (this.files[0].size > 5 * 1024 * 1024) {
-                    alert('File size exceeds 5MB limit. Please choose a smaller file.');
-                    this.value = '';
-                    fileName.textContent = '';
-                    fileName.style.display = 'none';
-                    fileUploadArea.style.borderColor = '';
-                }
-            }
-        });
-
-        // Proceed to payment section
-        proceedBtn.addEventListener('click', function () {
-            if (validateBasicForm()) {
-                const ticketType = document.querySelector('input[name="ticketType"]:checked').value;
-                let amount = ticketType === 'professional' ? '₹1000' :
-                             ticketType === 'vip' ? '₹2500' : '₹500';
-                paymentAmount.textContent = amount;
-                const qrCode = document.querySelector('.qr-code');
-                qrCode.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=tedxbitnoida@upi&pn=TEDxBITNoida&am=${amount.substring(1)}&cu=INR`;
-                paymentSection.style.display = 'block';
-                paymentSection.scrollIntoView({ behavior: 'smooth' });
-            }
-        });
-
-        registrationForm.addEventListener('submit', function (e) {
-            e.preventDefault();
-            submitRegistration();
-        });
-    });
-
-    // ===== FUNCTIONS =====
-
-    function checkRegistrationCount() {
-    currentRegistrations = parseInt(localStorage.getItem('tedx_registrations')) || 0;
-    const remaining = MAX_REGISTRATIONS - currentRegistrations;
-    slotsLeft.textContent = remaining;
-
-    if (remaining <= 0) {
-        proceedBtn.disabled = true;
-        proceedBtn.textContent = 'Registrations Closed';
-        alert('All seats have been filled. Registrations are now closed.');
+  fileUploadArea.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', function () {
+    if (this.files.length > 0) {
+      if (this.files[0].size > 5 * 1024 * 1024) {
+        alert('File size exceeds 5MB limit.');
+        this.value = '';
+        fileName.style.display = 'none';
+        return;
+      }
+      fileName.textContent = this.files[0].name;
+      fileName.style.display = 'block';
+      fileUploadArea.style.borderColor = '#e62b1e';
     }
+  });
+
+  // Proceed to payment
+  proceedBtn.addEventListener('click', function () {
+    if (validateBasicForm()) {
+      const ticketType = document.querySelector('input[name="ticketType"]:checked').value;
+      let amount = ticketType === 'professional' ? '₹1000' :
+                   ticketType === 'vip' ? '₹2500' : '₹500';
+      paymentAmount.textContent = amount;
+      document.querySelector('.qr-code').src =
+        `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=tedxbitnoida@upi&pn=TEDxBITNoida&am=${amount.substring(1)}&cu=INR`;
+      paymentSection.style.display = 'block';
+      paymentSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+
+  // Form submit
+  registrationForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    submitRegistration();
+  });
+});
+
+function checkRegistrationCount() {
+  currentRegistrations = parseInt(localStorage.getItem('tedx_registrations')) || 0;
+  const remaining = MAX_REGISTRATIONS - currentRegistrations;
+  slotsLeft.textContent = remaining;
+
+  if (remaining <= 0) {
+    proceedBtn.disabled = true;
+    proceedBtn.textContent = 'Registrations Closed';
+    alert('All seats have been filled.');
+  }
 }
 
-    function validateBasicForm() {
-        const requiredFields = [
-            document.getElementById('fullName'),
-            document.getElementById('email'),
-            document.getElementById('phone'),
-            document.getElementById('institution')
-        ];
-        let isValid = true;
-        requiredFields.forEach(field => {
-            if (!field.value.trim()) {
-                field.style.borderColor = 'var(--error)';
-                isValid = false;
-            } else {
-                field.style.borderColor = '';
-            }
-        });
+function validateBasicForm() {
+  const requiredFields = ['fullName', 'email', 'phone', 'institution']
+    .map(id => document.getElementById(id));
 
-        const email = document.getElementById('email').value;
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-            document.getElementById('email').style.borderColor = 'var(--error)';
-            alert('Please enter a valid email address');
-            isValid = false;
-        }
-
-        const phone = document.getElementById('phone').value;
-        if (!/^[6-9]\d{9}$/.test(phone)) {
-            document.getElementById('phone').style.borderColor = 'var(--error)';
-            alert('Please enter a valid 10-digit Indian phone number');
-            isValid = false;
-        }
-
-        if (!document.querySelector('input[name="ticketType"]:checked')) {
-            alert('Please select a ticket type');
-            isValid = false;
-        }
-        return isValid;
+  let isValid = true;
+  requiredFields.forEach(field => {
+    if (!field.value.trim()) {
+      field.style.borderColor = 'var(--error)';
+      isValid = false;
+    } else {
+      field.style.borderColor = '';
     }
+  });
 
-// Replace the submitRegistration function with this:
+  const email = document.getElementById('email').value;
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    alert('Enter a valid email.');
+    return false;
+  }
+
+  const phone = document.getElementById('phone').value;
+  if (!/^[6-9]\d{9}$/.test(phone)) {
+    alert('Enter a valid 10-digit Indian phone number.');
+    return false;
+  }
+
+  if (!document.querySelector('input[name="ticketType"]:checked')) {
+    alert('Please select a ticket type.');
+    return false;
+  }
+
+  return isValid;
+}
+
 async function submitRegistration() {
-  const submitBtn = document.getElementById('submitRegistration');
   submitBtn.disabled = true;
   submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
 
   try {
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(formData)
-    });
-
-    // Handle non-JSON responses
-    const contentType = response.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
-      const text = await response.text();
-      throw new Error(`Invalid response: ${text.slice(0, 100)}...`);
-    }
-
-    const result = await response.json();
-    // Prepare form data
     const formData = {
       name: document.getElementById('fullName').value,
       email: document.getElementById('email').value,
@@ -1149,25 +1123,19 @@ async function submitRegistration() {
       transactionId: document.getElementById('transactionId').value
     };
 
-    // Add file if uploaded
     const fileInput = document.getElementById('paymentProof');
     if (fileInput.files[0]) {
-      try {
-        formData.paymentProof = {
-          filename: fileInput.files[0].name,
-          mimeType: fileInput.files[0].type,
-          base64: await toBase64(fileInput.files[0])
-        };
-      } catch (error) {
-    console.error('Registration error:', error);
-    alert(`Registration failed: ${error.message}`);
-  } finally {   
-    // Show upload progress
+      formData.paymentProof = {
+        filename: fileInput.files[0].name,
+        mimeType: fileInput.files[0].type,
+        base64: await toBase64(fileInput.files[0])
+      };
+    }
+
     progressContainer.style.display = 'block';
     updateProgress(30);
 
-    // Make the API call
-    const response = await fetch('/api', {
+    const response = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(formData)
@@ -1175,84 +1143,56 @@ async function submitRegistration() {
 
     updateProgress(70);
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Registration failed');
-    }
-
+    if (!response.ok) throw new Error('Registration failed.');
     const result = await response.json();
+    if (!result.success) throw new Error(result.error || 'Registration failed.');
+
     updateProgress(100);
-
-    if (!result.success) {
-      throw new Error(result.error || 'Registration failed');
-    }
-
-    // Show success
-    document.getElementById('confirmEmail').textContent = formData.email;
-    document.getElementById('confirmTicketType').textContent = formData.ticketType;
-    document.getElementById('confirmAmount').textContent = paymentAmount.textContent;
-    confirmationOverlay.style.display = 'flex';
+    showConfirmation();
 
   } catch (error) {
-    console.error('Registration error:', error);
     alert(`Registration failed: ${error.message}`);
+    progressBar.style.backgroundColor = '#f44336';
+    progressBar.textContent = 'Error';
   } finally {
     submitBtn.disabled = false;
     submitBtn.textContent = 'Complete Registration';
-    progressContainer.style.display = 'none';
+    setTimeout(() => progressContainer.style.display = 'none', 1500);
   }
 }
 
-// Keep only one toBase64 function
 function toBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = err => reject(err);
     reader.readAsDataURL(file);
-    reader.onload = () => {
-      const base64String = reader.result.split(',')[1];
-      resolve(base64String);
-    };
-    reader.onerror = error => reject(error);
   });
 }
 
-    function updateProgress(percent) {
-        progressBar.style.width = percent + '%';
-        progressBar.textContent = percent + '%';
-        if (percent === 100) progressBar.style.backgroundColor = '#4CAF50';
-    }
+function updateProgress(percent) {
+  progressBar.style.width = percent + '%';
+  progressBar.textContent = percent + '%';
+  if (percent === 100) progressBar.style.backgroundColor = '#4CAF50';
+}
 
-    function handleUploadError(message) {
-        console.error('Error:', message);
-        progressBar.style.backgroundColor = '#f44336';
-        progressBar.textContent = 'Error';
-        alert('Error: ' + message);
-        progressContainer.style.display = 'none';
-    }
+function showConfirmation() {
+  const email = document.getElementById('email').value;
+  const ticketType = document.querySelector('input[name="ticketType"]:checked').value;
+  let amount = ticketType === 'professional' ? '₹1000' :
+               ticketType === 'vip' ? '₹2500' : '₹500';
 
-    function showConfirmation() {
-        const email = document.getElementById('email').value;
-        const ticketType = document.querySelector('input[name="ticketType"]:checked').value;
-        let amount = ticketType === 'professional' ? '₹1000' :
-                     ticketType === 'vip' ? '₹2500' : '₹500';
+  document.getElementById('confirmEmail').textContent = email;
+  document.getElementById('confirmTicketType').textContent = ticketType;
+  document.getElementById('confirmAmount').textContent = amount;
 
-        document.getElementById('confirmEmail').textContent = email;
-        document.getElementById('confirmTicketType').textContent = ticketType;
-        document.getElementById('confirmAmount').textContent = amount;
+  confirmationOverlay.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
 
-        confirmationOverlay.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
-        progressContainer.style.display = 'none';
-
-        // Reset form after short delay
-        setTimeout(() => {
-            registrationForm.reset();
-            document.getElementById('fileName').textContent = '';
-            document.getElementById('fileName').style.display = 'none';
-            document.getElementById('fileUploadArea').style.borderColor = '';
-        }, 1000);
-    }
+  setTimeout(() => registrationForm.reset(), 1000);
+}
 </script>
+
 
 </body>
 </html>
