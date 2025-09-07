@@ -123,3 +123,4 @@ document.addEventListener('DOMContentLoaded', function() {
             answer.classList.toggle('active');
         });
     });
+    

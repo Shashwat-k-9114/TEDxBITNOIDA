@@ -641,6 +641,48 @@ section {
     border: none;
 }
 
+/* CSS to fix the logo and remove the text */
+.logo span {
+    display: none !important;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logo img {
+    height: 40px; /* Adjust as needed */
+    width: auto;
+}
+
+/* Optional: Adjust the navbar layout for better appearance */
+nav {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+    background-color: #000000; /* TEDx red */
+    padding: 10px 0;
+}
+
+nav .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* For mobile responsiveness */
+@media (max-width: 768px) {
+    .logo img {
+        height: 30px; /* Smaller logo on mobile */
+    }
+}
+
 /* CTA Section */
 .section-cta {
     background: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url('https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80') no-repeat center center/cover;
@@ -1183,4 +1225,110 @@ footer {
 .sponsor-cta a {
     color: #e62b1e;
     font-weight: 600;
+}
+/* Enhanced Speaker Cards */
+.speaker-category {
+    margin-bottom: 60px;
+}
+
+.speaker-category h3 {
+    font-size: 1.8rem;
+    margin-bottom: 30px;
+    color: var(--secondary);
+    position: relative;
+    display: inline-block;
+}
+
+/* .speaker-category h3:after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 0;
+    width: 50px;
+    height: 3px;
+    background-color: var(--ted-red);
+} */
+
+/* Updated Speaker Category Headers */
+.speaker-category h3 {
+    font-size: 1.8rem;
+    margin-bottom: 40px; /* Extra space for decoration */
+    color: var(--secondary);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* .speaker-category h3::after {
+    content: '•';
+    color: var(--ted-red);
+    font-size: 1.5rem;
+    margin-top: 10px;
+    animation: float 2s ease-in-out infinite;
+} */
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+.speaker-category h3 {
+    font-size: 1.8rem;
+    padding: 15px 30px;
+    margin-bottom: 30px;
+    color: var(--secondary);
+    position: relative;
+    display: inline-block;
+}
+
+.speaker-category h3::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 2px solid transparent;
+    border-radius: 50px;
+    background: linear-gradient(90deg, transparent, var(--ted-red), linear-gradient(90deg, var(--ted-red), transparent);
+    background-clip: padding-box, border-box;
+    background-origin: padding-box, border-box;
+    animation: borderGlow 3s linear infinite;
+    z-index: -1;
+}
+
+@keyframes borderGlow {
+    0% { opacity: 0.3; }
+    50% { opacity: 1; }
+    100% { opacity: 0.3; }
+}
+.speaker-category h3 {
+    font-size: 1.8rem;
+    margin-bottom: 30px;
+    color: var(--secondary);
+    text-shadow: 0 0 0 var(--ted-red);
+    transition: text-shadow 0.4s ease;
+    position: relative;
+    display: inline-block;
+    padding: 0 10px;
+}
+
+.speaker-category h3:hover {
+    text-shadow: 3px 3px 0 var(--ted-red),
+                -3px -3px 0 var(--ted-red);
+}
+
+.speaker-category h3::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--ted-red);
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.4s ease;
+}
+
+.speaker-category h3:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
 }

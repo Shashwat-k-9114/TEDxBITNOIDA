@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register for TEDxBITNoida 2025</title>
+        <link rel="icon" type="image/x-icon" href="/assets/logo-white.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -649,22 +650,7 @@
         margin-top: 20px;
     }
     
-    .social-links a {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background-color: rgba(255, 255, 255, 0.1);
-        color: white;
-        transition: var(--transition);
-    }
     
-    .social-links a:hover {
-        background-color: var(--primary);
-        transform: translateY(-3px);
-    }
     
     .footer-bottom {
         text-align: center;
@@ -763,19 +749,45 @@
 .ticket-type input:checked + .ticket-content .price {
     color: var(--primary-dark);
 }
+
+
+.social-links {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.social-links a {
+    color: white;
+    background-color: rgba(255, 255, 255, 0.1);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: var(--transition);
+}
+
+.social-links a:hover {
+    background-color: var(--ted-red);
+    transform: translateY(-3px);
+}
+
+
 </style>
 </head>
 <body>
     <div class="loader">
         <div class="tedx-logo">
-            <span>TED</span><span>x</span>
+            <p><span>TED</span><span><sup>x</sup></span>BIT Noida</p>
         </div>
     </div>
     
     <nav>
         <div class="container">
             <div class="logo">
-                <span>TED</span><span>x</span><span>BITNoida</span>
+                <span>TED</span><span><sup>x</sup></span><span>BIT Noida</span>
             </div>
             <div class="nav-links">
                 <a href="index.html#about">About</a>
@@ -802,7 +814,7 @@
 
     <section class="register-hero">
         <div class="container">
-            <h1>Join TEDxBITNoida 2025</h1>
+            <h1>Join TED<sup>x</sup>BIT Noida 2025</h1>
             <p>Be part of this transformative experience and connect with like-minded individuals who are shaping the future.</p>
         </div>
     </section>
@@ -841,27 +853,27 @@
                 <label>Ticket Type*</label>
                 <div class="ticket-types">
     <label class="ticket-type">
-        <input type="radio" name="ticketType" value="student" required>
+        <input type="radio" name="ticketType" value="CampusPass" required>
         <div class="ticket-content">
-            <h4>Student</h4>
+            <h4>Campus Pass (BIT Students)</h4>
             <div class="price">₹500</div>
             <p>Valid student ID required</p>
         </div>
     </label>
     <label class="ticket-type">
-        <input type="radio" name="ticketType" value="professional" required>
+        <input type="radio" name="ticketType" value="Alumni" required>
         <div class="ticket-content">
-            <h4>Professional</h4>
+            <h4>Alumni Pass</h4>
             <div class="price">₹1000</div>
-            <p>For working professionals</p>
+            <p>For BIT Alumni</p>
         </div>
     </label>
     <label class="ticket-type">
-        <input type="radio" name="ticketType" value="vip" required>
+        <input type="radio" name="ticketType" value="General" required>
         <div class="ticket-content">
-            <h4>VIP</h4>
-            <div class="price">₹2500</div>
-            <p>Premium seating + Goodies</p>
+            <h4>General Pass</h4>
+            <div class="price">₹1500</div>
+            <p>External Attendees</p>
         </div>
     </label>
 </div>
@@ -930,7 +942,7 @@
                 <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" stroke="#e62b1e" stroke-width="4"/>
             </svg>
             <h3>Registration Successful!</h3>
-            <p>Thank you for registering for TEDxBITNoida 2025.</p>
+            <p>Thank you for registering for TED<sup>x</sup>BIT Noida 2025.</p>
             <p>We've sent a confirmation to <strong id="confirmEmail"></strong>.</p>
             <div class="ticket-summary">
                 <p><strong>Ticket Type:</strong> <span id="confirmTicketType"></span></p>
@@ -946,7 +958,7 @@
             <div class="footer-content">
                 <div class="footer-col">
                     <div class="logo">
-                        <span>TED</span><span>x</span><span>BITNoida</span>
+                        <span>TED</span><span><sup>x</sup></span><span>BIT Noida</span>
                     </div>
                     <p>An independently organized TED event</p>
                     <div class="social-links">
@@ -983,9 +995,7 @@
     </footer>
 
     <script>
-const MAX_REGISTRATIONS = 100;
-let currentRegistrations = 0;
-const API_URL = '/api/proxy'; // Goes to our Vercel API route
+const API_URL = '/api/proxy'; // This should point to your Vercel function
 
 // Loader fade-out
 document.addEventListener('DOMContentLoaded', () => {
@@ -1011,8 +1021,11 @@ document.addEventListener('DOMContentLoaded', function () {
   const slotsLeft = document.getElementById('slotsLeft');
   const progressBar = document.getElementById('uploadProgress');
   const progressContainer = document.getElementById('progressContainer');
-
-  checkRegistrationCount();
+  
+  // Check if slotsLeft element exists before using it
+  if (slotsLeft) {
+    checkRegistrationCount();
+  }
 
   document.querySelector('.mobile-menu-btn').addEventListener('click', () => {
     document.querySelector('.mobile-menu').classList.toggle('active');
@@ -1044,8 +1057,18 @@ document.addEventListener('DOMContentLoaded', function () {
   proceedBtn.addEventListener('click', function () {
     if (validateBasicForm()) {
       const ticketType = document.querySelector('input[name="ticketType"]:checked').value;
-      let amount = ticketType === 'professional' ? '₹1000' :
-                   ticketType === 'vip' ? '₹2500' : '₹500';
+      let amount;
+      
+      if (ticketType === 'CampusPass') {
+        amount = '₹500';
+      } else if (ticketType === 'Alumni') {
+        amount = '₹1000';
+      } else if (ticketType === 'General') {
+        amount = '₹1500';
+      } else {
+        amount = '₹500'; // default
+      }
+      
       paymentAmount.textContent = amount;
       document.querySelector('.qr-code').src =
         `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=tedxbitnoida@upi&pn=TEDxBITNoida&am=${amount.substring(1)}&cu=INR`;
@@ -1059,29 +1082,37 @@ document.addEventListener('DOMContentLoaded', function () {
     submitRegistration();
   });
 
-async function checkRegistrationCount() {
-  try {
-    const res = await fetch(`${API_URL}?action=count`);
-    const data = await res.json();
-    const total = data.count || 0;
-    const remaining = MAX_REGISTRATIONS - total;
+  async function checkRegistrationCount() {
+    try {
+      const res = await fetch(`${API_URL}?action=count`);
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      
+      const data = await res.json();
+      const total = data.count || 0;
+      const remaining = MAX_REGISTRATIONS - total;
 
-    slotsLeft.textContent = remaining;
+      // Only update if slotsLeft element exists
+      if (slotsLeft) {
+        slotsLeft.textContent = remaining;
+      }
 
-    if (remaining <= 0) {
-      proceedBtn.disabled = true;
-      proceedBtn.textContent = 'Registrations Closed';
-      registrationForm.querySelectorAll('input, button, select, textarea')
-        .forEach(el => el.disabled = true);
-      alert('All seats have been filled.');
+      if (remaining <= 0) {
+        proceedBtn.disabled = true;
+        proceedBtn.textContent = 'Registrations Closed';
+        registrationForm.querySelectorAll('input, button, select, textarea')
+          .forEach(el => el.disabled = true);
+        alert('All seats have been filled.');
+      }
+    } catch (err) {
+      console.error('Failed to check registration count', err);
+      // Only update if slotsLeft element exists
+      if (slotsLeft) {
+        slotsLeft.textContent = 'N/A';
+      }
     }
-  } catch (err) {
-    console.error('Failed to check registration count', err);
-    slotsLeft.textContent = 'N/A';
   }
-}
-
-
 
   function validateBasicForm() {
     const requiredFields = ['fullName', 'email', 'phone', 'institution']
@@ -1144,8 +1175,10 @@ async function checkRegistrationCount() {
         .map(([key, value]) => encodeURIComponent(key) + '=' + encodeURIComponent(value))
         .join('&');
 
-      progressContainer.style.display = 'block';
-      updateProgress(30);
+      if (progressContainer) {
+        progressContainer.style.display = 'block';
+        updateProgress(30);
+      }
 
       const response = await fetch(API_URL, {
         method: 'POST',
@@ -1153,7 +1186,9 @@ async function checkRegistrationCount() {
         body: formBody
       });
 
-      updateProgress(70);
+      if (progressContainer) {
+        updateProgress(70);
+      }
 
       let result;
       try {
@@ -1166,17 +1201,24 @@ async function checkRegistrationCount() {
         throw new Error(result?.error || 'Registration failed');
       }
 
-      updateProgress(100);
+      if (progressContainer) {
+        updateProgress(100);
+      }
+      
       showConfirmation();
 
     } catch (error) {
       alert(`Registration failed: ${error.message}`);
-      progressBar.style.backgroundColor = '#f44336';
-      progressBar.textContent = 'Error';
+      if (progressBar) {
+        progressBar.style.backgroundColor = '#f44336';
+        progressBar.textContent = 'Error';
+      }
     } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = 'Complete Registration';
-      setTimeout(() => progressContainer.style.display = 'none', 1500);
+      if (progressContainer) {
+        setTimeout(() => progressContainer.style.display = 'none', 1500);
+      }
     }
   }
 
@@ -1190,16 +1232,27 @@ async function checkRegistrationCount() {
   }
 
   function updateProgress(percent) {
-    progressBar.style.width = percent + '%';
-    progressBar.textContent = percent + '%';
-    if (percent === 100) progressBar.style.backgroundColor = '#4CAF50';
+    if (progressBar) {
+      progressBar.style.width = percent + '%';
+      progressBar.textContent = percent + '%';
+      if (percent === 100) progressBar.style.backgroundColor = '#4CAF50';
+    }
   }
 
   function showConfirmation() {
     const email = document.getElementById('email').value;
     const ticketType = document.querySelector('input[name="ticketType"]:checked').value;
-    let amount = ticketType === 'professional' ? '₹1000' :
-                 ticketType === 'vip' ? '₹2500' : '₹500';
+    let amount;
+    
+    if (ticketType === 'CampusPass') {
+      amount = '₹500';
+    } else if (ticketType === 'Alumni') {
+      amount = '₹1000';
+    } else if (ticketType === 'General') {
+      amount = '₹1500';
+    } else {
+      amount = '₹500'; // default
+    }
 
     document.getElementById('confirmEmail').textContent = email;
     document.getElementById('confirmTicketType').textContent = ticketType;
@@ -1210,6 +1263,18 @@ async function checkRegistrationCount() {
     setTimeout(() => registrationForm.reset(), 1000);
   }
 });
+async function safeFetch(url, options = {}) {
+  try {
+    const response = await fetch(url, options);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Fetch error:', error);
+    return { success: false, error: error.message };
+  }
+}
 </script>
 
 </body>
