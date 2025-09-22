@@ -1332,3 +1332,23 @@ footer {
     transform: scaleX(1);
     transform-origin: left;
 }
+
+.team-image {
+    height: 280px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+    padding: 25px;
+    position: relative;
+}
+
+.team-image img {
+    width: 180px;
+    height: 180px;
+    object-fit: cover;
+    object-position: center 55%; /* Creates headspace by positioning image lower */
+    border-radius: 50%;
+    border: 4px solid white;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
