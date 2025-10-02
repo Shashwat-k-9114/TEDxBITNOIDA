@@ -868,15 +868,15 @@
             <p>For BIT Volunteers</p>
         </div>
     </label>
-<!--   <label class="ticket-type">
-        <input type="radio" name="ticketType" value="General" required>
+    <label class="ticket-type">
+        <input type="radio" name="ticketType" value="Alumni" required>
         <div class="ticket-content">
-            <h4>General Pass</h4>
-            <div class="price">₹1500</div>
-            <p>External Attendees</p>
+            <h4>Alumni Pass</h4>
+            <div class="price">₹1000</div>
+            <p>BIT Alumni</p>
         </div>
     </label>
--->
+
 </div>
             </div>
             
@@ -1060,8 +1060,8 @@ document.addEventListener('DOMContentLoaded', function () {
         amount = '₹500';
       } else if (ticketType === 'Volunteer') {
         amount = '₹300';
-      } else if (ticketType === 'General') {
-        amount = '₹1500';
+      } else if (ticketType === 'Alumni') {
+        amount = '₹1000';
       } else {
         amount = '₹500'; // default
       }
@@ -1243,8 +1243,8 @@ document.addEventListener('DOMContentLoaded', function () {
       amount = '₹500';
     } else if (ticketType === 'Volunteer') {
       amount = '₹300';
-    } else if (ticketType === 'General') {
-      amount = '₹1500';
+    } else if (ticketType === 'Alumni') {
+      amount = '₹1000';
     } else {
       amount = '₹500'; // default
     }
